@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="EggApps — Meta Prompt kopyalama sayfası. Fikri Anla → Master Prompt Üret.">
+<title>EggApps · Meta Prompt — Fikri Anla → Master Prompt Üret</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥚</text></svg>">
+<style>
+  :root{
+    --bg:#0a0e1c;
+    --ink:#edf0fa;
+    --muted:#a0a9c0;
+    --line:rgba(255,255,255,.09);
+    --panel:rgba(255,255,255,.04);
+    --panel-strong:rgba(255,255,255,.07);
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--ink);
+    font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    line-height:1.6;-webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:
+      radial-gradient(640px 420px at 85% -60px, rgba(255,190,60,.15), transparent 70%),
+      radial-gradient(720px 520px at -120px 32%, rgba(99,102,241,.16), transparent 70%);
+  }
+  ::selection{background:rgba(255,190,60,.32)}
+  .wrap{max-width:1060px;margin:0 auto;padding:0 20px}
+  code{font-family:var(--mono);font-size:.92em;background:rgba(255,255,255,.07);border:1px solid var(--line);border-radius:6px;padding:1px 6px;white-space:nowrap}
+
+  /* ---------- Üst bar ---------- */
+  header.site{position:sticky;top:0;z-index:50;background:rgba(10,14,28,.78);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .bar{display:flex;align-items:center;gap:12px;padding:12px 0}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:20px;letter-spacing:.3px;color:var(--ink);text-decoration:none}
+  .brand .egg{font-size:24px;filter:drop-shadow(0 2px 8px rgba(255,190,60,.4))}
+  .brand .tag{font-size:11px;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px;letter-spacing:.8px;text-transform:uppercase}
+  nav{margin-left:auto;display:flex;align-items:center;gap:4px}
+  nav a{color:var(--muted);text-decoration:none;padding:8px 12px;border-radius:10px;font-size:14.5px;transition:.15s}
+  nav a:hover{color:var(--ink);background:var(--panel)}
+  @media(max-width:760px){nav a{display:none}}
+
+  /* ---------- Düğmeler ---------- */
+  .btn{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--line);background:var(--panel);color:var(--ink);padding:11px 18px;border-radius:12px;font-size:15px;font-weight:600;cursor:pointer;text-decoration:none;transition:.18s;user-select:none;font-family:inherit}
+  .btn:hover{background:var(--panel-strong);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(135deg,#ffd76e,#ffab2e);border-color:transparent;color:#241703;box-shadow:0 6px 22px rgba(255,171,46,.28)}
+  .btn.primary:hover{box-shadow:0 10px 28px rgba(255,171,46,.42)}
+  .btn.sm{padding:7px 12px;font-size:13.5px;border-radius:9px}
+  .btn.copied,.btn.primary.copied{background:#17301f!important;border-color:rgba(74,222,128,.55)!important;color:#86efac!important;box-shadow:none!important}
+
+  /* ---------- Hero ---------- */
+  .hero{padding:68px 0 36px;text-align:center}
+  .badge{display:inline-flex;gap:8px;align-items:center;padding:7px 15px;border:1px solid var(--line);border-radius:999px;background:var(--panel);color:var(--muted);font-size:13.5px}
+  h1{font-size:clamp(30px,5.4vw,52px);line-height:1.16;margin:22px 0 14px;font-weight:800;letter-spacing:-.5px}
+  h1 .grad{background:linear-gradient(92deg,#ffd977 0%,#ffc247 45%,#fff3d6 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{max-width:700px;margin:0 auto 28px;color:var(--muted);font-size:17px}
+  .sub b{color:var(--ink)}
+  .cta{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+  /* ---------- Bölümler ---------- */
+  section{padding:30px 0;scroll-margin-top:86px}
+  h2{font-size:26px;margin:0 0 6px;letter-spacing:-.3px}
+  .lead{color:var(--muted);margin:0 0 20px}
+  .lead code{color:#ffe1a1}
+
+  /* ---------- Adımlar ---------- */
+  .steps{display:grid;gap:13px}
+  .step{display:flex;gap:16px;padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}
+  .step .num{flex:0 0 auto;width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;background:linear-gradient(135deg,rgba(255,215,110,.22),rgba(255,171,46,.1));border:1px solid rgba(255,190,60,.32);color:#ffd977}
+  .step h3{margin:1px 0 6px;font-size:16.5px}
+  .step p{margin:0;color:var(--muted);font-size:14.5px}
+  .step p code{color:#ffe1a1}
+  .callout{display:flex;gap:12px;padding:14px 16px;border-radius:14px;border:1px solid rgba(255,190,60,.26);background:rgba(255,190,60,.07);color:#ffe6ad;font-size:14.5px;margin-top:16px}
+  .flow-title{margin:30px 0 4px;font-size:18px}
+  .flow{display:flex;align-items:stretch;gap:10px;flex-wrap:wrap;margin-top:12px}
+  .chip{flex:1 1 210px;padding:13px 16px;border-radius:14px;border:1px solid var(--line);background:var(--panel)}
+  .chip .k{display:block;font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.7px}
+  .chip .v{font-weight:700;font-size:16px;font-family:var(--mono)}
+  .chip.hot{border-color:rgba(255,190,60,.4)}
+  .arrow{align-self:center;color:var(--muted);font-size:20px}
+
+  /* ---------- Örnek kartları ---------- */
+  .grid2{display:grid;gap:14px;grid-template-columns:1fr}
+  @media(min-width:760px){.grid2{grid-template-columns:1fr 1fr}}
+  .card{border:1px solid var(--line);border-radius:16px;background:var(--panel);overflow:hidden}
+  .card-head{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--line)}
+  .card-head b{font-size:14.5px}
+  .card-head .btn{margin-left:auto}
+  .card .desc{padding:12px 16px 4px;color:var(--muted);font-size:14px;margin:0}
+  pre{margin:0;padding:14px 16px;overflow:auto;font-family:var(--mono);font-size:13.5px;line-height:1.6;color:#ffe9c2}
+  pre::-webkit-scrollbar{width:10px;height:10px}
+  pre::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:8px}
+  pre::-webkit-scrollbar-track{background:transparent}
+
+  /* ---------- Ham metin ---------- */
+  .filebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 16px;border:1px solid var(--line);border-bottom:0;border-radius:16px 16px 0 0;background:var(--panel-strong)}
+  .filebar .fname{font-family:var(--mono);font-size:14px;font-weight:700;color:#ffd977}
+  .filebar .stat{color:var(--muted);font-size:13px}
+  .filebar .sp{flex:1}
+  .codebox{border:1px solid var(--line);border-radius:0 0 16px 16px;background:#0d1224;overflow:hidden}
+  .codebox pre{max-height:62vh;white-space:pre;color:#dbe3f8}
+
+  /* ---------- Alt bilgi & toast ---------- */
+  footer{border-top:1px solid var(--line);margin-top:44px;padding:26px 0 42px;color:var(--muted);font-size:14px;text-align:center}
+  footer b{color:var(--ink)}
+  #toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);background:#182238;border:1px solid var(--line);color:var(--ink);padding:11px 18px;border-radius:12px;font-size:14.5px;opacity:0;pointer-events:none;transition:.25s;z-index:99;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+  #toast.show{opacity:1;transform:translate(-50%,0)}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap bar">
+    <a class="brand" href="#top"><span class="egg">🥚</span> EggApps <span class="tag">Tools</span></a>
+    <nav>
+      <a href="#talimat">Kullanma Talimatı</a>
+      <a href="#ornekler">Örnekler</a>
+      <a href="#metin">Ham Metin</a>
+    </nav>
+    <button class="btn primary sm js-copy" data-src="#kaynak-metin">📋 Metni Kopyala</button>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="hero" id="top">
+    <span class="badge">🥚 EggApps sunar · meta-prompt.md</span>
+    <h1>Meta Prompt<br><span class="grad">“Fikri Anla → Master Prompt Üret”</span></h1>
+    <p class="sub">Aşağıdaki ham metni tek tıkla kopyala, yapay zekâya yapıştır. Önce fikrini soru sorarak <b>%100</b> anlar; sonra hedef modelin dilinde yazılmış, istediğin dilde yanıt vermeye zorlayan bir <b>Master Prompt</b> üretir.</p>
+    <div class="cta">
+      <button class="btn primary js-copy" data-src="#kaynak-metin">📋 Metni Kopyala</button>
+      <a href="#" class="btn js-download">⬇️ .md olarak indir</a>
+      <a href="#talimat" class="btn">📖 Nasıl kullanılır?</a>
+    </div>
+  </section>
+
+  <section id="talimat">
+    <h2>📖 Kullanma Talimatı</h2>
+    <p class="lead">Beş adımda kullan: <b>kopyala → yapıştır → ayarla → cevapla → master prompt'u kullan.</b></p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="num">1</div>
+        <div>
+          <h3>📋 Metni kopyala</h3>
+          <p>Sayfadaki herhangi bir <b>“Metni Kopyala”</b> düğmesine bas (üst bar, hero ya da ham metin bölümünde). <code>meta-prompt.md</code> dosyasının tamamı panoya alınır. İstersen <b>“⬇️ .md olarak indir”</b> ile dosya halinde de alabilirsin.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">2</div>
+        <div>
+          <h3>🤖 Yapay zekâya yapıştır</h3>
+          <p>ChatGPT, Claude, Gemini, DeepSeek… Hangisini kullanacaksan <b>yeni bir sohbet aç</b> ve metnin tamamını <b>ilk mesaj</b> olarak yapıştır. Metnin sonundaki <b>“HIZLI BAŞLANGIÇ”</b> bölümü senin içindir; yapıştırmasan da olur.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">3</div>
+        <div>
+          <h3>✍️ Ayarlarını ve fikrini yaz</h3>
+          <p>Hemen altına üç satır ekle: <code>MODEL_DİLİ</code> (master prompt'un yazılacağı dil — kullanacağın yapay zekânın en iyi anladığı dil), <code>ÇIKTI_DİLİ</code> (o yapay zekânın sana yanıt vereceği dil) ve <code>FİKRİM</code> (aklındaki fikir). Hazır örnekler aşağıdaki <b>Örnekler</b> bölümünde.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">4</div>
+        <div>
+          <h3>💬 Soruları cevapla</h3>
+          <p>Yapay zekâ seninle <b>Türkçe</b> konuşur ve fikrini anlamak için her turda en fazla 5 soru sorar. Cevaplarını ver; sonunda gelen <b>ANLAYIŞ ÖZETİ</b>'ni <b>“Evet”</b> diye onayla.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="num">5</div>
+        <div>
+          <h3>🚀 Master prompt'u kullan</h3>
+          <p>Karşına <code>MODEL_DİLİ</code>'nde yazılmış, çıktıyı <code>ÇIKTI_DİLİ</code>'ne zorlayan master prompt tek bir kod bloğunda gelir. Kopyala, <b>hedef yapay zekâya</b> yapıştır ve çalışmaya başla.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout">💡 <span><b>İpucu:</b> Fikrini ilk mesajda yazmazsan yapay zekâ sana sorar. <code>MODEL_DİLİ</code> ile <code>ÇIKTI_DİLİ</code> aynı olmak zorunda değil — prompt Çince yazılıp yanıtlar Türkçe gelebilir.</span></div>
+
+    <h3 class="flow-title">Üç dil katmanı birbirine karışmaz</h3>
+    <div class="flow">
+      <div class="chip"><span class="k">1 · Meta prompt</span><span class="v">Türkçe</span></div>
+      <div class="arrow">→</div>
+      <div class="chip hot"><span class="k">2 · Master prompt</span><span class="v">MODEL_DİLİ</span></div>
+      <div class="arrow">→</div>
+      <div class="chip hot"><span class="k">3 · Yapay zekâ yanıtı</span><span class="v">ÇIKTI_DİLİ</span></div>
+    </div>
+  </section>
+
+  <section id="ornekler">
+    <h2>⚡ Hızlı Örnekler</h2>
+    <p class="lead">Meta prompt'u yapıştırdıktan sonra altına ekleyeceğin üç satır böyle görünür:</p>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-head"><b>🤖 ChatGPT örneği</b><button class="btn sm js-copy" data-src="#ex1-src">Kopyala</button></div>
+        <p class="desc">Sana <b>İngilizce yazılmış</b> ama <b>Türkçe çıktı veren</b> bir master prompt teslim eder.</p>
+        <pre data-pre="ex1"></pre>
+      </div>
+      <div class="card">
+        <div class="card-head"><b>🐉 DeepSeek örneği</b><button class="btn sm js-copy" data-src="#ex2-src">Kopyala</button></div>
+        <p class="desc">Seninle Türkçe konuşur, master prompt'u <b>Çince</b> yazar, DeepSeek sana <b>Türkçe</b> yanıt verir.</p>
+        <pre data-pre="ex2"></pre>
+      </div>
+    </div>
+  </section>
+
+  <section id="metin">
+    <h2>📄 Ham Metin</h2>
+    <p class="lead">Kopyalanacak dosyanın tamamı — bu metni yapay zekâya yapıştıracaksın.</p>
+    <div class="filebar">
+      <span class="fname">📄 meta-prompt.md</span>
+      <span class="stat" id="stat"></span>
+      <span class="sp"></span>
+      <button class="btn sm js-copy" data-src="#kaynak-metin">📋 Kopyala</button>
+      <a href="#" class="btn sm js-download">⬇️ İndir</a>
+    </div>
+    <div class="codebox"><pre id="rawBox"></pre></div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">🥚 <b>EggApps</b> · Meta Prompt Kopyalama Sayfası · <span id="yil"></span></div>
+</footer>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script type="text/plain" id="kaynak-metin" data-pre="rawBox"># META PROMPT — "Fikri Anla → Master Prompt Üret"
+
+> **Bu meta prompt daima Türkçe'dir ve Türkçe kalır.** Değişen tek şey ürettiği master prompt'un dili (`MODEL_DİLİ`) ve o master prompt'un zorlayacağı yanıt dili (`ÇIKTI_DİLİ`)dir.
+
+## ROLÜN
+
+Sen bir **Prompt Mimarı**'sın. İşin iki aşamalı ve sırası **asla değiştirilemez**:
+
+- **AŞAMA 2:** Kullanıcının fikrini, %100 netleşene kadar **soru sorarak** anlarsın.
+- **AŞAMA 3:** O fikri hayata geçirecek **Master Prompt**'u üretirsin.
+
+Bu iki şeyi karıştırmak yasak. Sen bu aşamada çözüm üretmezsin; **çözümü üretecek prompt'u** üretirsin.
+
+---
+
+## 0. DİL AYARLARI (her şeyden önce oku)
+
+Bu meta prompt Türkçe'dir; aşağıdaki iki ayar ise üreteceğin şeyin dilini belirler. Kullanıcı mesajında bunları doldurmuş olabilir; doldurmamışsa Aşama 1'de soracaksın.
+
+- `MODEL_DİLİ` (çalışma dili) = **Master Prompt'un yazılacağı dil.** Kullanıcının "kullanacağım yapay zekânın ana dili / eğitim dili" dediği dil. Örnek: İngilizce, Çince, Almanca, Türkçe.
+- `ÇIKTI_DİLİ` = **Hedef yapay zekânın yanıtını yazacağı dil.** Kullanıcının istediği dil. `MODEL_DİLİ` ile aynı olmak **zorunda değildir.**
+
+> **KRİTİK KURAL:** Bu meta prompt Türkçe yazılmıştır ve sen kullanıcıyla Türkçe konuşursun. Buna rağmen ürettiğin Master Prompt `MODEL_DİLİ`'nde olur; o Master Prompt'un içindeki talimat ise hedef modelin çıktısını `ÇIKTI_DİLİ`'nde vermeye zorlar. **Bu üç katman birbirine karışmaz:** meta prompt Türkçe → master prompt `MODEL_DİLİ` → modelin yanıtı `ÇIKTI_DİLİ`.
+
+---
+
+## AŞAMA 1 — DİL AYARLARINI KESİNLEŞTİR (tek tur, çok kısa)
+
+1. Kullanıcının ilk mesajında bir fikir var mı? Varsa **hiçbir şeyi atlamadan** oku ve not al.
+2. İki ayardan biri eksikse, ikisini de **tek bir mesajda** sor:
+   - "Bu master prompt'u hangi dilde yazmamı istersin? (kullanacağın yapay zekânın en iyi anladığı dil)"
+   - "O yapay zekânın sana hangi dilde yanıt vermesini istiyorsun?"
+3. İki ayar da netse bu aşamayı tek cümleyle kapat:
+   > "Anladım: master prompt **{MODEL_DİLİ}** yazılacak, yapay zekâ sana **{ÇIKTI_DİLİ}** yanıt verecek. Şimdi fikrini anlamak için sorulara başlıyorum."
+4. Bu aşamada fikir sorma, fikir eleştirme, çözüm önerme. Sadece ayarları kapat.
+
+---
+
+## AŞAMA 2 — FİKRİ %100 ANLA (soru aşaması)
+
+Bu aşamanın tek amacı: kullanıcının kafasındaki şeyi, sen de onun kadar net görene kadar netleştirmek.
+
+**Her turda şu formatı kullan:**
+
+1. **Şu ana kadar anladıklarım:** 3–6 madde (kendi cümlelerinle, kısa).
+2. **Sorularım (maksimum 5):** Her sorunun yanına tek satırda "→ bunu neden soruyorum" gerekçesi yaz.
+3. Kapanış: "Bu tur yeterliyse 'devam' de, eksik/yanlış varsa düzelt."
+
+**Soru disiplini:**
+
+- Bilmediğini varsayma. Kullanıcının yazmadığı hiçbir şeyi "kesin öyledir" diye doldurma.
+- Önce sonucu en çok değiştiren soruları sor: amaç, hedef kitle, başarı ölçütü, format, kısıtlar, ton, yasaklar, girdi/çıktı örnekleri, istisna durumlar.
+- Aynı turda hem genel hem teknik soru sorabilirsin; ama 5'i geçme.
+- Kullanıcı "bilmiyorum" derse: 2–3 somut seçenek sun, birini öner ve gerekçesini yaz.
+- Gereksiz soru sorma: cevabı zaten belliyse veya sonucu değiştirmeyecekse sorma.
+- Kullanıcının cevabı çelişkiliyse çelişkiyi **açıkça göster** ve hangisini seçtiğini sor.
+
+**Bitiş kontrolü:**
+
+Yeterli bilgiye ulaştığını düşününce **ANLAYIŞ ÖZETİ** yaz: Amaç, Hedef kitle, Girdi, Çıktı, Kısıtlar, Ton, Başarı ölçütü, İstisnalar/Varsayımlar. Sonra sor:
+
+> "Bu özet doğru mu? 'Evet' dersen master prompt'u üretiyorum; düzeltme varsa yaz."
+
+- "Evet" gelmeden **AŞAMA 3'e geçmek yasak.**
+- Kullanıcı "yeter, soru sorma, yaz artık" derse: varsayımlarını tek listede yaz, "bu varsayımlarla üretiyorum" de ve geç.
+
+---
+
+## AŞAMA 3 — MASTER PROMPT'U ÜRET
+
+Üç parça teslim et, sırasıyla:
+
+**A) MASTER PROMPT** — `MODEL_DİLİ`'nde, tek bir kod bloğu içinde (kullanıcının doğrudan kopyalayıp yapıştırabileceği şekilde).
+
+**B) KULLANIM NOTU** — 1–2 cümle: nereye yapıştırılacak, hangi alanları doldurması gerekiyor.
+
+**C) DİL DENETİM SATIRI** — şu şablonda tek satır:
+
+> Dil denetimi: prompt **{MODEL_DİLİ}** · çıktı **{ÇIKTI_DİLİ}** · anti-drift talimatı eklendi ✓
+
+### Master Prompt'un zorunlu iskeleti
+
+Sıralama değişebilir ama şu bölümlerin **hepsi** bulunmalı, hepsi `MODEL_DİLİ`'nde yazılmalı:
+
+1. **ROLE** — kim olduğunu, uzmanlığını, yaklaşımını tanımla.
+2. **CONTEXT** — kullanıcının dünyası, neden bu işi yaptığı.
+3. **TASK** — tam olarak ne yapılacak (tek cümlelik net bir görev tanımı + gerekiyorsa alt görevler).
+4. **OUTPUT LANGUAGE / ÇIKTI DİLİ** — *asla atlanamaz* (aşağıdaki şablonu kullan).
+5. **INPUT** — modelin kullanacağı değişkenler / yer tutucular (ör. `[KULLANICI_METNİ]`).
+6. **PROCESS** — adım adım çalışma sırası.
+7. **CONSTRAINTS** — yapılacaklar **ve** yapılmayacaklar.
+8. **OUTPUT FORMAT** — tam olarak hangi başlıklar, hangi sırada, hangi uzunlukta.
+9. **QUALITY BAR** — "iyi"nin ölçülebilir tanımı + 1 mini iyi/kötü örnek.
+10. **EDGE CASES** — belirsiz girdi, eksik bilgi, uygunsuz istek durumunda ne yapılacak.
+11. **SELF-CHECK** — modeli, yanıtı göndermeden önce kontrol listesiyle denetlemeye zorla (dil kontrolü dahil).
+
+### Dil bölümü için şablon (bu bloğu `MODEL_DİLİ`'ne çevirip master prompt'un içine ekle)
+
+> **OUTPUT LANGUAGE — HARD RULE**
+> - Write **every single word of your response** in **{ÇIKTI_DİLİ}**. No exceptions.
+> - This instruction set is written in {MODEL_DİLİ}. That is a deliberate choice: it exists so you understand the task perfectly. It does **not** change the language of your answer.
+> - Never translate, restate, summarize or quote any part of this prompt in your response.
+> - Do not mention, apologize for or explain the language arrangement.
+> - Proper nouns, brand names, code, file names, commands, variable names and universally used technical terms stay in their original form. Everything else: {ÇIKTI_DİLİ}.
+> - If the user's input is in another language, still answer in {ÇIKTI_DİLİ}.
+> - Before sending, verify: "Is 100% of my reply in {ÇIKTI_DİLİ}?" If not, rewrite it.
+
+*Not: Yukarıdaki İngilizce metin şablondur; master prompt'a girerken `MODEL_DİLİ`'ne çevrilir. `{ÇIKTI_DİLİ}` yerine kullanıcının istediği dil yazılır, o dil adı da master prompt'un dilinde geçer.*
+
+### Kalite standartları
+
+- Master prompt **kendi kendine yeterli** olmalı: bu sohbetten tek kelime bilmeden çalışmalı.
+- Muğlak sıfat yok ("iyi", "güzel", "profesyonel" tek başına yasak) → ölçülebilir karşılığını yaz.
+- Genel tavsiye yok: her talimat doğrudan bu göreve özel olmalı.
+- Uzunluk işe yaramalı; dolgu cümle yok.
+- Modelin uydurma yapmasını engelleyecek "bilmiyorsan söyle" talimatı ekle.
+
+---
+
+## SERT KURALLAR
+
+1. Aşama 2 bitmeden master prompt üretmek **yasak**.
+2. Master prompt `MODEL_DİLİ` dışında bir dilde yazılamaz.
+3. Kullanıcı `ÇIKTI_DİLİ` belirtmişse, çıktı dilini kendi tercihine göre değiştiremezsin.
+4. Kullanıcı "yanlış anlamışsın" derse: savunma yapma, doğrudan Aşama 2'ye dön, eksik olanı sor, sonra tekrar üret.
+5. Kullanıcı master prompt'ta değişiklik isterse: sadece o kısmı yeniden yaz, her şeyi baştan üretme.
+6. Kullanıcının ilk mesajı zaten çok detaylıysa: yine de en fazla 2–3 kritik soru sor. "Zaten her şeyi yazmış" deyip atlamak yok.
+
+---
+
+## HAZIR MISIN?
+
+Kullanıcının ilk mesajını oku. Aşama 1'den başla. Şimdi.
+
+---
+
+## HIZLI BAŞLANGIÇ (kullanıcı için — bu kısmı yapıştırmana gerek yok)
+
+**Örnek:** ChatGPT'de kullanacaksın ve çıktının Türkçe olmasını istiyorsun.
+
+1. Bu Türkçe meta prompt'un tamamını ChatGPT'ye yapıştır.
+2. Altına şunu yaz:
+   ```
+   MODEL_DİLİ: İngilizce
+   ÇIKTI_DİLİ: Türkçe
+   FİKRİM: Instagram için haftalık içerik takvimi üreten bir sistem istiyorum.
+   ```
+3. ChatGPT sana Türkçe sorular sorar → sen cevap verirsin → sana **İngilizce yazılmış** ama **Türkçe çıktı veren** bir master prompt teslim eder.
+
+**Örnek:** DeepSeek kullanacaksın ve çıktının Türkçe olmasını istiyorsun.
+
+```
+MODEL_DİLİ: Çince
+ÇIKTI_DİLİ: Türkçe
+FİKRİM: ...
+```
+
+Yine seninle Türkçe konuşur, master prompt'u Çince yazar, DeepSeek sana Türkçe yanıt verir.
+</script>
+<script type="text/plain" id="ex1-src" data-pre="ex1">
+MODEL_DİLİ: İngilizce
+ÇIKTI_DİLİ: Türkçe
+FİKRİM: Instagram için haftalık içerik takvimi üreten bir sistem istiyorum.</script>
+<script type="text/plain" id="ex2-src" data-pre="ex2">
+MODEL_DİLİ: Çince
+ÇIKTI_DİLİ: Türkçe
+FİKRİM: ...</script>
+
+<script>
+(function(){
+  var $ = function(s){ return document.querySelector(s); };
+  var $$ = function(s){ return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  var raw = $('#kaynak-metin').textContent;
+
+  // <pre> bloklarını kaynak metinlerden doldur
+  $$('script[type="text/plain"][data-pre]').forEach(function(s){
+    var p = document.getElementById(s.getAttribute('data-pre'));
+    if(p) p.textContent = s.textContent.replace(/^\n/,'').replace(/\s+$/,'\n');
+  });
+
+  // Dosya istatistikleri ve yıl
+  var lines = raw.replace(/\n$/,'').split('\n').length;
+  var kb = (new Blob([raw]).size/1024).toFixed(1).replace('.',',');
+  $('#stat').textContent = lines + ' satır · ' + kb + ' KB · UTF-8';
+  $('#yil').textContent = new Date().getFullYear();
+
+  // Toast
+  function toast(msg){
+    var t = $('#toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  // Kopyalama (pano API'si + eski tarayıcılar için yedek)
+  function copyFallback(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly','');
+    ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch(e){}
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function doCopy(text){
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      return navigator.clipboard.writeText(text).then(
+        function(){ return true; },
+        function(){ return copyFallback(text); }
+      );
+    }
+    return Promise.resolve(copyFallback(text));
+  }
+  function flash(btn){
+    if(!btn.dataset.label) btn.dataset.label = btn.innerHTML;
+    btn.classList.add('copied');
+    btn.innerHTML = '✓ Kopyalandı';
+    clearTimeout(btn._t);
+    btn._t = setTimeout(function(){
+      btn.innerHTML = btn.dataset.label;
+      btn.classList.remove('copied');
+    }, 2000);
+  }
+
+  $$('.js-copy').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var sel = btn.getAttribute('data-src');
+      var text = sel ? $(sel).textContent : (btn.getAttribute('data-text') || '');
+      doCopy(text).then(function(ok){
+        if(ok){ flash(btn); toast('Panoya kopyalandı ✓'); }
+        else { toast('Kopyalanamadı — metni elle seçip kopyala.'); }
+      });
+    });
+  });
+
+  // .md indirme
+  $$('.js-download').forEach(function(a){
+    a.addEventListener('click', function(e){
+      e.preventDefault();
+      var blob = new Blob([raw], {type:'text/markdown;charset=utf-8'});
+      var url = URL.createObjectURL(blob);
+      var t = document.createElement('a');
+      t.href = url; t.download = 'meta-prompt.md';
+      document.body.appendChild(t); t.click(); document.body.removeChild(t);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      toast('meta-prompt.md indiriliyor ⬇️');
+    });
+  });
+})();
+</script>
+
+</body>
+</html>
